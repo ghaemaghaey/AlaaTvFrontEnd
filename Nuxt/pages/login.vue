@@ -10,12 +10,9 @@
         >Login completed go <nuxt-link to="/">Home</nuxt-link> page to Edit
         Data</v-alert
       >
-      <v-alert
-        v-if="showError"
-        dismissible
-        elevation="10"
-        type="error"
-      >User Name Or Password Is Incorrect</v-alert>
+      <v-alert v-if="showError" dismissible elevation="10" type="error"
+        >User Name Or Password Is Incorrect</v-alert
+      >
       <v-form ref="form" lazy-validation>
         <v-text-field
           v-model="mobile"
@@ -32,7 +29,8 @@
 
         <v-btn color="success" class="mr-4" @click="postData">Sign In </v-btn>
 
-        <v-btn color="error" class="mr-4" @click="clear"><h3>Clear</h3></v-btn>
+        <v-btn color="warning" class="mr-4 black--text" @click="clear"><h3>Clear</h3></v-btn>
+        <v-btn color="error" @click="logOut">LogOut</v-btn>
       </v-form>
     </v-col>
   </v-row>
@@ -75,14 +73,19 @@ export default {
               shahr_id: this.request_data.user.shahr,
             })
           );
-          localStorage.setItem("isAuth", true);
+          // localStorage.setItem("isAuth", true);
+          this.$store.commit("changeToTrue");
           this.showSuccess = true;
-        })
-        .catch((error) => {
-          if (error.response.status == 422) {
-            this.showError = true;
-          }
         });
+      // .catch((error) => {
+      //   if (error.response.status == 422) {
+      //     this.showError = true;
+      //   }
+      // });
+    },
+    logOut() {
+      this.$store.commit("changeToFalse");
+      localStorage.clear()
     },
   },
 };

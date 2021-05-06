@@ -9,7 +9,7 @@
       <v-col>
         <v-alert v-if="showSuccess" dismissible elevation="10" type="success" class="black--text"
           >Information changed successfully</v-alert
-        ><v-alert v-if="showErrr" dismissible elevation="10" type="error"
+        ><v-alert v-if="showError" dismissible elevation="10" type="error"
           >Somthing went wrong please login again</v-alert>
           </v-col>
     </v-row>
@@ -61,11 +61,13 @@
     <v-btn @click="readyDataForSubmit" color="success"
       ><p class="black--text">Submit Data</p></v-btn
     >
+    <nuxt-link @click="logOut" flat to="/login">Sign out</nuxt-link>
   </div>
 </template>
 
 <script>
 export default {
+  middleware: ['new'],
   data() {
     return {
       token_type: "Bearer",
@@ -91,13 +93,10 @@ export default {
       slc_major: null,
       slc_city: null,
       showSuccess:false,
+      showError:false,
     };
   },
-  middleware({ redirect }) {
-    if (!localStorage.getItem("isAuth")) {
-      redirect("/login");
-    }
-  },
+
   mounted() {
     this.setAllData();
     this.setUpData();
@@ -200,6 +199,10 @@ export default {
       }).catch(error=>{
         showError = true
       })
+    },
+    logOut() {
+      this.$store.commit("changeToFalse");
+      localStorage.clear()
     },
   },
 };
