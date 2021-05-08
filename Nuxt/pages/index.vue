@@ -7,11 +7,17 @@
     </v-row>
     <v-row>
       <v-col>
-        <v-alert v-if="showSuccess" dismissible elevation="10" type="success" class="black--text"
+        <v-alert
+          v-if="showSuccess"
+          dismissible
+          elevation="10"
+          type="success"
+          class="black--text"
           >Information changed successfully</v-alert
         ><v-alert v-if="showError" dismissible elevation="10" type="error"
-          >Somthing went wrong please login again</v-alert>
-          </v-col>
+          >Somthing went wrong please login again</v-alert
+        >
+      </v-col>
     </v-row>
     <v-row>
       <v-text-field label="first_name" readonly="readonly" v-model="first_name">
@@ -27,50 +33,67 @@
     <v-row>
       <v-text-field label="school" v-model="school"> </v-text-field>
     </v-row>
-    <v-select
-      v-model="slc_gender"
-      :items="genders"
-      label="Genders"
-      outlined
-    ></v-select>
-    <v-select
-      v-model="slc_grade"
-      :items="grades"
-      label="Grade"
-      outlined
-    ></v-select>
-    <v-select
-      v-model="slc_major"
-      :items="majors"
-      label="Majors"
-      outlined
-    ></v-select>
-    <v-select
-      @change="changedPrivonce"
-      v-model="slc_provinces"
-      :items="provinces"
-      label="Provinces"
-      outlined
-    ></v-select>
-    <v-select
-      v-model="slc_city"
-      :items="cities"
-      label="cities"
-      outlined
-    ></v-select>
-    <v-btn @click="readyDataForSubmit" color="success"
-      ><p class="black--text">Submit Data</p></v-btn
+    <v-form
+    ref="form"
+    lazy-validation>
+      <v-select
+        required
+        :rules="[(v) => !!v || 'Gender is required']"
+        v-model="slc_gender"
+        :items="genders"
+        label="Genders"
+        outlined
+      ></v-select>
+      <v-select
+        required
+        :rules="[(v) => !!v || 'Grade is required']"
+        v-model="slc_grade"
+        :items="grades"
+        label="Grade"
+        outlined
+      ></v-select>
+      <v-select
+        v-model="slc_major"
+        :rules="[(v) => !!v || 'Major is required']"
+        :items="majors"
+        required
+        label="Majors"
+        outlined
+      ></v-select>
+      <v-select
+        required
+        :rules="[(v) => !!v || 'Provinces is required']"
+        @change="changedPrivonce"
+        v-model="slc_provinces"
+        :items="provinces"
+        label="Provinces"
+        outlined
+      ></v-select>
+      <v-select
+        required
+        :rules="[(v) => !!v || 'City is required']"
+        v-model="slc_city"
+        :items="cities"
+        label="cities"
+        outlined
+      ></v-select>
+      <v-btn
+        @click="beforeReadyDataForSubmit(user_id, first_name)"
+        color="success"
+        ><p class="black--text">Submit Data</p></v-btn
+      ></v-form
     >
-    <nuxt-link @click="logOut" flat to="/login">Sign out</nuxt-link>
+    <nuxt-link @click="logOut" to="/login">Sign out</nuxt-link>
   </div>
 </template>
 
 <script>
 export default {
-  middleware: ['new'],
+  middleware: ["new"],
   data() {
     return {
       token_type: "Bearer",
+      province: null,
       user_id: null,
       first_name: null,
       last_name: null,
@@ -92,8 +115,17 @@ export default {
       slc_grade: null,
       slc_major: null,
       slc_city: null,
-      showSuccess:false,
-      showError:false,
+      showSuccess: false,
+      showError: false,
+      idList: ["province", "gender_id", "grade_id", "major_id", "shahr_id"],
+      slcList: [
+        "slc_provinces",
+        "slc_gender",
+        "slc_grade",
+        "slc_major",
+        "slc_city",
+      ],
+      normalList: ["provinces", "genders", "grades", "majors", "cities"],
     };
   },
 
@@ -105,7 +137,6 @@ export default {
   methods: {
     setAllData() {
       this.myData = JSON.parse(localStorage.getItem("myData"));
-      // this.myData = JSON.parse(this.myData)
     },
     setUpData() {
       this.user_id = this.myData.user_id;
@@ -121,7 +152,9 @@ export default {
     getCityData() {
       this.$axios.get("megaroute/getUserFormData").then((res) => {
         this.userFormData = res.data.data;
-        this.setCityData();
+        for (let counter = 0; counter < this.normalList.length; counter++) {
+          this.setCityData(this.normalList[counter]);
+        }
       });
     },
     changedPrivonce() {
@@ -133,76 +166,63 @@ export default {
           }
         });
     },
-    setCityData() {
-      // console.log(this.userFormData);
-      this.userFormData.genders.forEach((element) => {
-        this.genders.push(element.title);
-      });
-      this.userFormData.majors.forEach((element) => {
-        this.majors.push(element.title);
-      });
-      this.userFormData.provinces.forEach((element) => {
-        this.provinces.push(element.title);
-      });
-      this.userFormData.cities.forEach((element) => {
-        if (element.province.title == this.slc_provinces) {
-          this.cities.push(element.title);
-        }
-        this.userFormData.grades.forEach((element) => {
-          this.grades.push(element.title);
-        });
+    setCityData(normalListVariable) {
+      this.userFormData[normalListVariable].forEach((element) => {
+        this[normalListVariable].push(element.title);
       });
     },
-    readyDataForSubmit() {
-      this.userFormData.cities.forEach((e) => {
-        if (e.title == this.slc_city) {
-          this.shahr_id = e.id;
+    beforeReadyDataForSubmit() {
+      if(this.$refs.form.validate()){
+        for (let i = 0; i < this.slcList.length; i++) {
+          this.readyDataForSubmit(
+            this.slcList[i],
+            this.normalList[i],
+            this.idList[i]
+          );
         }
-      }),
-        this.userFormData.majors.forEach((e) => {
-          if (e.title == this.slc_major) {
-            this.major_id = e.id;
-          }
-        }),
-        this.userFormData.grades.forEach((e) => {
-          if (e.title == this.slc_grade) {
-            this.grade_id = e.id;
-          }
-        }),
-        this.userFormData.genders.forEach((e) => {
-          if (e.title == this.slc_gender) {
-            this.gender = e.id;
-          }
-        });
-      this.SubmitData();
+        this.SubmitData()
+      }
     },
+    readyDataForSubmit(slcVariable, outputList, idList) {
+      this.userFormData[outputList].forEach((e) => {
+        if (e.title == this[slcVariable]) {
+          this[idList] = e.id;
+        }
+      });
+      // console.log(this.province);
+    },
+
+    // this.SubmitData();
     SubmitData() {
-      this.$axios.put(
-        `user/${this.user_id}`,
-        {
-          first_name: this.first_name,
-          last_name: this.last_name,
-          address: this.address,
-          school: this.school,
-          major_id: this.major_id,
-          grade_id: this.grade_id,
-          gender_id: this.gender_id,
-          shahr_id: this.shahr_id,
-        },
-        {
-          headers: {
-            Authorization: this.token_type + " " + this.myData.access_token,
+      this.$axios
+        .put(
+          `user/${this.user_id}`,
+          {
+            first_name: this.first_name,
+            last_name: this.last_name,
+            address: this.address,
+            school: this.school,
+            major_id: this.major_id,
+            grade_id: this.grade_id,
+            gender_id: this.gender_id,
+            shahr_id: this.shahr_id,
           },
-        }
-      ).then(res=> {
-        this.showSuccess = true
-      }).catch(error=>{
-        showError = true
-      })
+          {
+            headers: {
+              Authorization: this.token_type + " " + this.myData.access_token,
+            },
+          }
+        )
+        .then((res) => {
+          this.showSuccess = true;
+        })
+        .catch((error) => {
+          showError = true;
+        });
     },
     logOut() {
       this.$store.commit("changeToFalse");
-      localStorage.clear()
+      localStorage.clear();
     },
   },
 };
