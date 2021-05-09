@@ -170,9 +170,18 @@ export default {
         });
     },
     setCityData(normalListVariable) {
-      this.userFormData[normalListVariable].forEach((element) => {
-        this[normalListVariable].push(element.title);
-      });
+      if(normalListVariable == 'cities'){
+        this.userFormData['cities'].forEach((element)=>{
+          if(element.province.title == this.slc_provinces){
+            this.cities.push(element.title)
+          }
+        }
+        )
+      }else{
+        this.userFormData[normalListVariable].forEach((element) => {
+          this[normalListVariable].push(element.title);
+        });
+      }
     },
     beforeReadyDataForSubmit() {
       if(this.$refs.form.validate()){
@@ -231,7 +240,6 @@ export default {
     beforeUnloadFunc() {
       this.$store.commit("changeToFalse");
       localStorage.clear();
-      this.$router.push('/login')
     }
   },
 };
