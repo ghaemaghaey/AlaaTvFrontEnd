@@ -14,7 +14,8 @@
     "core-js": "^3.9.1",
     "es6-promise": "^4.2.8",
     "nuxt": "^2.15.3",
-    "vuex": "^3.6.2"
+    "vuex": "^3.6.2",
+    "vuex-persistedstate": "^4.0.0-beta.3"
   },
   "devDependencies": {
     "@nuxtjs/vuetify": "^1.11.3"

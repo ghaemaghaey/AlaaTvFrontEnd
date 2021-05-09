@@ -80,10 +80,12 @@
       <v-btn
         @click="beforeReadyDataForSubmit(user_id, first_name)"
         color="success"
-        ><p class="black--text">Submit Data</p></v-btn
-      ></v-form
+        class="black--text"
+        >Submit Data</v-btn
+      >
+    <v-btn color="error" @click="logOut">SignOut</v-btn>
+      </v-form
     >
-    <nuxt-link @click="logOut" to="/login">Sign out</nuxt-link>
   </div>
 </template>
 
@@ -133,6 +135,7 @@ export default {
     this.setAllData();
     this.setUpData();
     this.getCityData();
+    addEventListener('beforeunload',this.beforeUnloadFunc)
   },
   methods: {
     setAllData() {
@@ -223,7 +226,13 @@ export default {
     logOut() {
       this.$store.commit("changeToFalse");
       localStorage.clear();
+      this.$router.push('/login')
     },
+    beforeUnloadFunc() {
+      this.$store.commit("changeToFalse");
+      localStorage.clear();
+      this.$router.push('/login')
+    }
   },
 };
 </script>
